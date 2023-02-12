@@ -20,9 +20,10 @@ function Game() {
     const windowWidth = React.useRef(window.innerWidth);
     const windowHeight = React.useRef(window.innerHeight);
     React.useEffect(() => {
-        const ctx = canvas.current.getContext("2d");
-        canvas.width = windowWidth;
-        canvas.height = windowHeight;
+   const ctx = canvas.current.getContext("2d");
+   console.log(canvas)
+    canvas.width = 800;
+    canvas.height = 800;
         class Game {
             constructor(width, height) {
               this.width = width;
