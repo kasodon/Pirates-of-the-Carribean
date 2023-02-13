@@ -6,7 +6,7 @@ import layer1 from './assets/1.png';
 import layer2 from './assets/2.png';
 import layer3 from './assets/3.png';
 import layer4 from './assets/4.png';
-import layer5 from './assets/layer-5.png';
+import layer5 from './assets/7.png';
 import enemy_fly from './assets/enemy_fly.png';
 import enemy_plant from './assets/enemy_plant.png';
 import enemy_spider from './assets/enemy_spider.png';
