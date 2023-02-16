@@ -14,6 +14,7 @@ import enemy_spider_big from './assets/enemy_spider_big.png';
 import fire from './assets/fire.png';
 import boom from './assets/boom.png';
 import lives from './assets/lives.png';
+import fire_ball from './assets/projectile.png';
 
 function App() {
   const canvas = React.useRef();
@@ -32,6 +33,7 @@ function App() {
               this.background = new Background(this);
               this.groundMargin = 20 * this.background.scaleFactor;
               this.player = new Player(this);
+              this.projectile = new Projectile(this);
               this.input = new InputHandler(this);
               this.speed = 0;
               this.maxSpeed = 3;
@@ -80,6 +82,7 @@ function App() {
               }
               this.background.update();
               this.player.update(this.input.keys, delta);
+              this.projectile.update();
               // handle enemies
               if (this.enemyTimer > this.enemyInterval) {
                 this.addEnemy();
@@ -285,8 +288,9 @@ function App() {
         constructor(game) {
           this.keys = [];
           window.addEventListener("keydown", (e) => {
-            if (this.keys.indexOf(e.key) === -1 && ["ArrowLeft", "ArrowRight", "ArrowDown", "ArrowUp", "Enter", "Space", "r", "R"].includes(e.key)) {
+            if (this.keys.indexOf(e.key) === -1 && ["ArrowLeft", "ArrowRight", "ArrowDown", "ArrowUp", "Enter", "Space", "r", "R", "s", "S"].includes(e.key)) {
               this.keys.push(e.key);
+              console.log(e.key)
             } else if (e.key === "d") {
               game.debug = !game.debug;
             }
@@ -307,6 +311,7 @@ function App() {
           this.x = 0;
           this.y = this.game.height - this.height - this.game.groundMargin;
           this.vy = 0;
+          this.projectiles = [];
           this.image = playerImage;
           this.frameX = 0;
           this.frameY = 0;
@@ -317,7 +322,7 @@ function App() {
           this.speed = 0;
           this.maxSpeed = 10;
           this.weight = 1;
-          this.states = [new Sitting(game), new Running(game), new Jumping(game), new Falling(game), new Rolling(game), new Diving(game), new Hit(game)];
+          this.states = [new Sitting(game), new Running(game), new Jumping(game), new Falling(game), new Rolling(game), new Diving(game), new Hit(game), new Shooting(game),];
           this.currentState = null;
         }
         update(inputKeys, delta) {
@@ -329,6 +334,13 @@ function App() {
             this.speed = this.maxSpeed;
           } else if (inputKeys.includes("ArrowLeft") && this.currentState !== this.states[6]) {
             this.speed = -this.maxSpeed;
+          } else if (inputKeys.includes("s") && this.currentState !== this.states[6]) {
+            this.projectiles.forEach((projectile) => {
+              projectile.update();
+            });
+            this.projectiles = this.projectiles.filter(
+              (projectile) => !projectile.markedForDeletion
+            );
           } else this.speed = 0;
           // horizontal boundaries
           if (this.x < 0) this.x = 0;
@@ -357,7 +369,15 @@ function App() {
           if (this.game.debug) {
             context.strokeRect(this.x, this.y, this.width, this.height);
           }
+          this.projectiles.forEach((projectile) => {
+            projectile.draw(context);
+          });
           context.drawImage(this.image, this.frameX * this.width, this.frameY * this.height, this.width, this.height, this.x, this.y, this.width, this.height);
+        }
+        shootTop() {
+            this.projectiles.push(
+              new Projectile(this.game, this.x + 80, this.y + 30)
+            );
         }
         onGround() {
           return this.y >= this.game.height - this.height - this.game.groundMargin;
@@ -395,6 +415,7 @@ function App() {
         ROLLING: 4,
         DIVING: 5,
         HIT: 6,
+        SHOOTING: 7,
       };
       
       class State {
@@ -417,6 +438,8 @@ function App() {
           if (inputKeys.includes("ArrowLeft") || inputKeys.includes("ArrowRight")) this.game.player.setState(states.RUNNING, 1);
           else if (inputKeys.includes("Enter")) {
             this.game.player.setState(states.ROLLING, 2);
+          } else if (inputKeys.includes("s")) {
+            this.game.player.setState(states.SHOOTING, 2);
           }
         }
       }
@@ -436,6 +459,8 @@ function App() {
           else if (inputKeys.includes("ArrowUp")) this.game.player.setState(states.JUMPING, 1);
           else if (inputKeys.includes("Enter")) {
             this.game.player.setState(states.ROLLING, 2);
+          } else if (inputKeys.includes("s")) {
+            this.game.player.setState(states.SHOOTING, 2);
           }
         }
       }
@@ -456,6 +481,8 @@ function App() {
             this.game.player.setState(states.ROLLING, 2);
           } else if (inputKeys.includes("ArrowDown") && !this.game.player.onGround()) {
             this.game.player.setState(states.DIVING, 0);
+          } else if (inputKeys.includes("s")) {
+            this.game.player.setState(states.SHOOTING, 2);
           }
         }
       }
@@ -473,6 +500,8 @@ function App() {
           if (this.game.player.onGround()) this.game.player.setState(states.RUNNING, 1);
           else if (inputKeys.includes("ArrowDown") && !this.game.player.onGround()) {
             this.game.player.setState(states.DIVING, 0);
+          } else if (inputKeys.includes("s")) {
+            this.game.player.setState(states.SHOOTING, 2);
           }
         }
       }
@@ -496,6 +525,8 @@ function App() {
             this.game.player.vy -= 27;
           } else if (inputKeys.includes("ArrowDown") && !this.game.player.onGround()) {
             this.game.player.setState(states.DIVING, 0);
+          } else if (inputKeys.includes("s")) {
+            this.game.player.setState(states.SHOOTING, 2);
           }
         }
       }
@@ -519,6 +550,8 @@ function App() {
             }
           } else if (inputKeys.includes("Enter") && this.game.player.onGround()) {
             this.game.player.setState(states.ROLLING, 2);
+          } else if (inputKeys.includes("s")) {
+            this.game.player.setState(states.SHOOTING, 2);
           }
         }
       }
@@ -537,6 +570,29 @@ function App() {
             this.game.player.setState(states.RUNNING, 1);
           } else if (this.game.player.frameX >= 10 && !this.game.player.onGround()) {
             this.game.player.setState(states.FALLING, 1);
+          } else if (inputKeys.includes("s")) {
+            this.game.player.setState(states.SHOOTING, 2);
+          }
+        }
+      }
+
+      class Shooting extends State {
+        constructor(game) {
+          super("SHOOTING", game);
+        }
+        enter() {
+          this.game.player.frameX = 0;
+          this.game.player.frameY = 4;
+          this.game.player.maxFrame = 10;
+          this.game.particles.unshift(new Projectile(this.game, this.game.player.x + this.game.player.width * 0.55, this.game.player.y + this.game.player.height * 0.5));
+        }
+        handleInput(inputKeys) {
+          // this.game.particles.unshift(new Projectile(this.game, this.game.player.x + this.game.player.width * 0.05, this.game.player.y + this.game.player.height));
+          // this.game.player.shootTop();
+          if (inputKeys.includes("ArrowLeft") && this.game.player.onGround()) {
+            this.game.player.setState(states.RUNNING, 1);
+          } else if (inputKeys.includes("ArrowLeft")&& !this.game.player.onGround()) {
+            this.game.player.setState(states.JUMPING, 1);
           }
         }
       }
@@ -551,6 +607,57 @@ function App() {
           this.y -= this.speedY;
           this.size *= 0.95;
           if (this.size < 0.5) this.markForDeletion = true;
+        }
+      }
+
+      class Projectile extends Particle {
+        constructor(game, x, y) {
+          super(game);
+          this.game = game;
+          this.x = x;
+          this.y = y;
+          this.width = 10;
+          this.height = 10;
+          this.speed = 5;
+          this.markedForDeletion = false;
+          this.image = fireBallImage;
+          this.states = [new Sitting(game), new Running(game), new Jumping(game), new Falling(game), new Rolling(game), new Diving(game), new Hit(game), new Shooting(game),];
+          this.currentState = null;
+        }
+
+        draw(context) {
+          context.drawImage(this.image, this.x, this.y);
+        }
+    
+        update() {
+          this.checkCollisions();
+          this.x += this.speed;
+          if (this.x > this.game.width * 1.8) this.markedForDeletion = true;
+        }
+
+        setState(stateIndex, speed) {
+          this.currentState = this.states[stateIndex];
+          this.game.speed = this.game.maxSpeed * speed;
+        }
+
+        checkCollisions() {
+          this.game.enemies.forEach((enemy) => {
+            if (enemy.x < this.x + this.width && enemy.x + enemy.width > this.x && enemy.y < this.y + this.height && enemy.y + enemy.height > this.y) {
+              enemy.markForDeletion = true;
+              this.markedForDeletion = true;
+              this.game.collisions.push(new CollisionAnimation(this.game, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5));
+              if (this.currentState === this.states[4] || this.currentState === this.states[5] || this.currentState === this.states[3] || this.currentState === this.states[2] || this.currentState === this.states[1] || this.currentState === this.states[0]) {
+                this.game.score++;
+                this.game.floatingMessages.push(new FloatingMessage("+1", enemy.x, enemy.y, 150, 50));
+              } else {
+                this.game.lives--;
+                if (this.game.lives === 0) {
+                  this.game.gameOver = true;
+                }
+                this.setState(6, 0);
+              }
+            }
+          });
         }
       }
       
@@ -734,6 +841,7 @@ function App() {
     <img id="fireTexture" src={fire} alt=""/>
     <img id="boomImage" src={boom} alt=""/>
     <img id="liveImage" src={lives} alt=""/>
+    <img id="fireBallImage" src={fire_ball} alt=""/>
     </div>
   );
 }
