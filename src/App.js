@@ -1,7 +1,7 @@
 /* eslint-disable no-undef */
 import React from "react";
 import PropTypes from "prop-types";
-import player from './assets/player.png';
+import player from './assets/player-BIG.png';
 import layer1 from './assets/1.png';
 import layer2 from './assets/2.png';
 import layer3 from './assets/3.png';
@@ -30,18 +30,18 @@ function App() {
             }
             start() {
               this.background = new Background(this);
-              this.groundMargin = 80 * this.background.scaleFactor;
+              this.groundMargin = 20 * this.background.scaleFactor;
               this.player = new Player(this);
               this.input = new InputHandler(this);
               this.speed = 0;
-              this.maxSpeed = 6;
+              this.maxSpeed = 3;
               this.enemies = [];
               this.particles = [];
-              this.maxParticles = 50;
+              this.maxParticles = 30;
               this.collisions = [];
               this.floatingMessages = [];
               this.enemyTimer = 0;
-              this.enemyInterval = 1000;
+              this.enemyInterval = 1000 + Math.random () * 2.1;
               this.debug = false;
               this.score = 0;
               this.fontColor = "black";
@@ -228,16 +228,16 @@ function App() {
         constructor(game) {
           super();
           this.game = game;
-          this.width = 60;
-          this.height = 44;
-          this.x = this.game.width + Math.random() * this.game.width * 0.5;
-          this.y = Math.random() * this.game.height * 0.5;
-          this.speedX = Math.random() + 1;
+          this.width = 120;
+          this.height = 88;
+          this.x = this.game.width + Math.random() * this.game.width * 0.05;
+          this.y = Math.random() * this.game.height * 1.3;
+          this.speedX = Math.random() + 0.0001;
           this.speedY = 0;
-          this.maxFrame = 5;
+          this.maxFrame = 0;
           this.image = flyImage;
           this.angle = 0;
-          this.va = Math.random() * 0.1 + 0.1; // velocity angle
+          this.va = Math.random() * 0.0001 + 0.0001; // velocity angle
         }
         update(deltaTime) {
           super.update(deltaTime);
@@ -252,11 +252,11 @@ function App() {
           this.game = game;
           this.width = 60;
           this.height = 87;
-          this.x = this.game.width;
-          this.y = this.game.height - this.height - this.game.groundMargin;
+          this.x = this.game.width + Math.random() * this.game.width * 0.05;
+          this.y = Math.random() * this.game.height * 1.3;
           this.speedX = 0;
           this.speedY = 0;
-          this.maxFrame = 1;
+          this.maxFrame = 0;
           this.image = plantImage;
         }
       }
@@ -264,27 +264,21 @@ function App() {
         constructor(game) {
           super();
           this.game = game;
-          this.width = 120;
-          this.height = 144;
+          this.width = 375;
+          this.height = 306;
           this.x = this.game.width;
           this.y = Math.random() * this.game.height * 0.5;
           this.image = spiderBigImage;
           this.speedX = 0;
           this.speedY = Math.random() > 0.5 ? 1 : -1;
-          this.maxFrame = 5;
+          this.maxFrame = 3;
         }
         update(deltaTime) {
           super.update(deltaTime);
           if (this.y > this.game.height - this.height - this.game.groundMargin) this.speedY *= -1;
           if (this.y < -this.height) this.markForDeletion = true;
         }
-        draw(context) {
-          super.draw(context);
-          context.beginPath();
-          context.moveTo(this.x + this.width / 2, 0);
-          context.lineTo(this.x + this.width / 2, this.y + 50);
-          context.stroke();
-        }
+        
       }
 
       class InputHandler {
@@ -308,8 +302,8 @@ function App() {
       class Player {
         constructor(game) {
           this.game = game;
-          this.width = 100;
-          this.height = 91.3;
+          this.width = 302;
+          this.height = 261;
           this.x = 0;
           this.y = this.game.height - this.height - this.game.groundMargin;
           this.vy = 0;
@@ -330,7 +324,7 @@ function App() {
           this.checkCollisions();
           this.currentState.handleInput(inputKeys);
           // horizontal movement
-          this.x += this.speed;
+          this.x += this.speed + 0.001;
           if (inputKeys.includes("ArrowRight") && this.currentState !== this.states[6]) {
             this.speed = this.maxSpeed;
           } else if (inputKeys.includes("ArrowLeft") && this.currentState !== this.states[6]) {
@@ -340,9 +334,12 @@ function App() {
           if (this.x < 0) this.x = 0;
           if (this.x > this.game.width - this.width) this.x = this.game.width - this.width;
           // vertical movement
-          this.y += this.vy;
-          if (!this.onGround()) this.vy += this.weight;
-          else this.vy = 0;
+          this.y += this.speed + 0.001;
+          if (inputKeys.includes("ArrowUp") && this.currentState !== this.states[6]) {
+            this.speed = this.maxSpeed;
+          } else if (inputKeys.includes("ArrowDown") && this.currentState !== this.states[6]) {
+            this.speed = -this.maxSpeed;
+          } else this.speed = 0;
           // vertical boundaries
           if (this.y > this.game.height - this.height - this.game.groundMargin) {
             this.y = this.game.height - this.height - this.game.groundMargin;
@@ -434,7 +431,7 @@ function App() {
           this.game.player.frameY = 3;
         }
         handleInput(inputKeys) {
-          this.game.particles.unshift(new Dust(this.game, this.game.player.x + this.game.player.width * 0.5, this.game.player.y + this.game.player.height));
+          this.game.particles.unshift(new Dust(this.game, this.game.player.x + this.game.player.width * 0.05, this.game.player.y + this.game.player.height));
           if (inputKeys.includes("ArrowDown")) this.game.player.setState(states.SITTING, 0);
           else if (inputKeys.includes("ArrowUp")) this.game.player.setState(states.JUMPING, 1);
           else if (inputKeys.includes("Enter")) {
@@ -511,7 +508,7 @@ function App() {
           this.game.player.frameX = 0;
           this.game.player.frameY = 6;
           this.game.player.maxFrame = 6;
-          this.game.player.vy = 15;
+          this.game.player.vy = 5;
         }
         handleInput(inputKeys) {
           this.game.particles.unshift(new Fire(this.game, this.game.player.x + this.game.player.width * 0.5, this.game.player.y + this.game.player.height * 0.5));
@@ -560,12 +557,12 @@ function App() {
       class Dust extends Particle {
         constructor(game, x, y) {
           super(game);
-          this.size = Math.random() * 10 + 10;
-          this.x = x;
-          this.y = y;
-          this.speedX = Math.random();
-          this.speedY = Math.random();
-          this.color = "rgba(0,0,0,0.3)";
+          this.size = Math.random() * 10.2 + 10;
+          this.x = x + 40;
+          this.y = y - 50;
+          this.speedX = Math.random() * 0.2;
+          this.speedY = Math.random() * 2.2;
+          this.color = "rgba(255,255,255,0.3)";
         }
         draw(context) {
           context.beginPath();
@@ -600,13 +597,13 @@ function App() {
         constructor(game, x, y) {
           super(game);
           this.image = fireTexture;
-          this.size = Math.random() * 50 + 50;
-          this.x = x;
+          this.size = Math.random() * 10 + 50;
+          this.x = x - 50;
           this.y = y;
           this.speedX = 1;
           this.speedY = 1;
           this.angle = 0;
-          this.va = Math.random() * 0.2 - 0.1;
+          this.va = Math.random() * 0.02 - 0.1;
         }
         draw(context) {
           context.save();
@@ -641,7 +638,7 @@ function App() {
           }
         }
         draw(context) {
-          context.font = "20px " + this.fontFamily;
+          context.font = "40px " + this.fontFamily;
           context.fillStyle = "white";
           context.fillText(this.value, this.x, this.y);
           context.fillStyle = "black";
@@ -718,6 +715,8 @@ function App() {
           }
         }
       }
+
+
 
   return (
     <div className="App">
