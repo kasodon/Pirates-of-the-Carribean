@@ -7,7 +7,7 @@ import layer2 from './assets/2.png';
 import layer3 from './assets/3.png';
 import layer4 from './assets/4.png';
 import layer5 from './assets/7.png';
-import enemy_fly from './assets/enemy_fly.png';
+import enemy_fly from './assets/bomb.png';
 import enemy_plant from './assets/enemy_plant.png';
 import enemy_spider from './assets/enemy_spider.png';
 import enemy_spider_big from './assets/enemy_spider_big.png';
@@ -76,6 +76,7 @@ function App() {
               this.ui.draw(context);
             }
             update(delta) {
+              // console.log("particles array:", this.particles)
               this.time += delta;
               if (this.time > this.maxTime) {
                 this.gameOver = true;
@@ -231,13 +232,13 @@ function App() {
         constructor(game) {
           super();
           this.game = game;
-          this.width = 120;
-          this.height = 88;
+          this.width = 100;
+          this.height = 90;
           this.x = this.game.width + Math.random() * this.game.width * 0.05;
           this.y = Math.random() * this.game.height * 1.3;
           this.speedX = Math.random() + 0.0001;
           this.speedY = 0;
-          this.maxFrame = 0;
+          this.maxFrame = 4;
           this.image = flyImage;
           this.angle = 0;
           this.va = Math.random() * 0.0001 + 0.0001; // velocity angle
@@ -290,7 +291,7 @@ function App() {
           window.addEventListener("keydown", (e) => {
             if (this.keys.indexOf(e.key) === -1 && ["ArrowLeft", "ArrowRight", "ArrowDown", "ArrowUp", "Enter", "Space", "r", "R", "s", "S"].includes(e.key)) {
               this.keys.push(e.key);
-              console.log(e.key)
+              // console.log(e.key)
             } else if (e.key === "d") {
               game.debug = !game.debug;
             }
@@ -328,34 +329,45 @@ function App() {
         update(inputKeys, delta) {
           this.checkCollisions();
           this.currentState.handleInput(inputKeys);
+        
           // horizontal movement
-          this.x += this.speed + 0.001;
           if (inputKeys.includes("ArrowRight") && this.currentState !== this.states[6]) {
-            this.speed = this.maxSpeed;
+            this.x += this.maxSpeed + 0.001;
           } else if (inputKeys.includes("ArrowLeft") && this.currentState !== this.states[6]) {
-            this.speed = -this.maxSpeed;
-          } else if (inputKeys.includes("s") && this.currentState !== this.states[6]) {
-            this.projectiles.forEach((projectile) => {
-              projectile.update();
-            });
-            this.projectiles = this.projectiles.filter(
-              (projectile) => !projectile.markedForDeletion
-            );
+            this.x -= this.maxSpeed + 0.001;
+          } else if (inputKeys.includes("s") && this.currentState !== this.states[6]) {	
+            this.projectiles.forEach((projectile) => {	
+              projectile.update();	
+            });	
+            this.projectiles = this.projectiles.filter(	
+              (projectile) => !projectile.markedForDeletion	
+            );	
           } else this.speed = 0;
+        
           // horizontal boundaries
           if (this.x < 0) this.x = 0;
           if (this.x > this.game.width - this.width) this.x = this.game.width - this.width;
+        
           // vertical movement
-          this.y += this.speed + 0.001;
           if (inputKeys.includes("ArrowUp") && this.currentState !== this.states[6]) {
-            this.speed = this.maxSpeed;
+            this.y -= this.maxSpeed + 0.001;
           } else if (inputKeys.includes("ArrowDown") && this.currentState !== this.states[6]) {
-            this.speed = -this.maxSpeed;
+            this.y += this.maxSpeed + 0.001;
+          } else if (inputKeys.includes("s") && this.currentState !== this.states[6]) {	
+            this.projectiles.forEach((projectile) => {	
+              projectile.update();	
+            });	
+            this.projectiles = this.projectiles.filter(	
+              (projectile) => !projectile.markedForDeletion	
+            );	
           } else this.speed = 0;
+        
           // vertical boundaries
+          if (this.y < 0) this.y = 0;
           if (this.y > this.game.height - this.height - this.game.groundMargin) {
             this.y = this.game.height - this.height - this.game.groundMargin;
           }
+        
           // sprite animation
           if (this.frameTimer > this.frameInterval) {
             this.frameTimer = 0;
@@ -365,6 +377,7 @@ function App() {
             this.frameTimer += delta;
           }
         }
+        
         draw(context) {
           if (this.game.debug) {
             context.strokeRect(this.x, this.y, this.width, this.height);
@@ -392,7 +405,7 @@ function App() {
             if (enemy.x < this.x + this.width && enemy.x + enemy.width > this.x && enemy.y < this.y + this.height && enemy.y + enemy.height > this.y) {
               enemy.markForDeletion = true;
               this.game.collisions.push(new CollisionAnimation(this.game, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5));
-              if (this.currentState === this.states[4] || this.currentState === this.states[5]) {
+              if (this.currentState === this.states[0] || this.currentState === this.states[1] || this.currentState === this.states[2] || this.currentState === this.states[3] || this.currentState === this.states[4] || this.currentState === this.states[5] || this.currentState === this.states[6] || this.currentState === this.states[7]) {
                 this.game.score++;
                 this.game.floatingMessages.push(new FloatingMessage("+1", enemy.x, enemy.y, 150, 50));
               } else {
@@ -435,9 +448,18 @@ function App() {
           this.game.player.maxFrame = 4;
         }
         handleInput(inputKeys) {
-          if (inputKeys.includes("ArrowLeft") || inputKeys.includes("ArrowRight")) this.game.player.setState(states.RUNNING, 1);
+          if (inputKeys.includes("ArrowLeft")) {
+            this.game.player.setState(states.RUNNING, 2);
+          } 
+          else if (inputKeys.includes("ArrowRight")) {
+            this.game.player.setState(states.RUNNING, 2);
+          } else if (inputKeys.includes("ArrowUp")) {
+            this.game.player.setState(states.RUNNING, 2);
+          } else if (inputKeys.includes("ArrowDown")) {
+            this.game.player.setState(states.RUNNING, 2);
+          }
           else if (inputKeys.includes("Enter")) {
-            this.game.player.setState(states.ROLLING, 2);
+            this.game.player.setState(states.RUNNING, 2);
           } else if (inputKeys.includes("s")) {
             this.game.player.setState(states.SHOOTING, 2);
           }
@@ -455,8 +477,15 @@ function App() {
         }
         handleInput(inputKeys) {
           this.game.particles.unshift(new Dust(this.game, this.game.player.x + this.game.player.width * 0.05, this.game.player.y + this.game.player.height));
-          if (inputKeys.includes("ArrowDown")) this.game.player.setState(states.SITTING, 0);
-          else if (inputKeys.includes("ArrowUp")) this.game.player.setState(states.JUMPING, 1);
+          if (inputKeys.includes("ArrowDown")) this.game.player.setState(states.RUNNING, 2);
+          else if (inputKeys.includes("ArrowLeft")) {
+            this.game.player.setState(states.RUNNING, 2);
+          } 
+          else if (inputKeys.includes("ArrowRight")) {
+            this.game.player.setState(states.RUNNING, 2);
+          } else if (inputKeys.includes("ArrowUp")) {
+            this.game.player.setState(states.RUNNING, 2);
+          }
           else if (inputKeys.includes("Enter")) {
             this.game.player.setState(states.ROLLING, 2);
           } else if (inputKeys.includes("s")) {
@@ -479,8 +508,15 @@ function App() {
           if (this.game.player.vy > this.game.player.weight) this.game.player.setState(states.FALLING, 1);
           else if (inputKeys.includes("Enter")) {
             this.game.player.setState(states.ROLLING, 2);
-          } else if (inputKeys.includes("ArrowDown") && !this.game.player.onGround()) {
-            this.game.player.setState(states.DIVING, 0);
+          } else if (inputKeys.includes("ArrowLeft")) {
+            this.game.player.setState(states.RUNNING, 2);
+          } 
+          else if (inputKeys.includes("ArrowRight")) {
+            this.game.player.setState(states.RUNNING, 2);
+          } else if (inputKeys.includes("ArrowUp")) {
+            this.game.player.setState(states.RUNNING, 2);
+          } else if (inputKeys.includes("ArrowDown")) {
+            this.game.player.setState(states.RUNNING, 2);
           } else if (inputKeys.includes("s")) {
             this.game.player.setState(states.SHOOTING, 2);
           }
@@ -498,8 +534,15 @@ function App() {
         }
         handleInput(inputKeys) {
           if (this.game.player.onGround()) this.game.player.setState(states.RUNNING, 1);
-          else if (inputKeys.includes("ArrowDown") && !this.game.player.onGround()) {
-            this.game.player.setState(states.DIVING, 0);
+          else if (inputKeys.includes("ArrowLeft")) {
+            this.game.player.setState(states.RUNNING, 2);
+          } 
+          else if (inputKeys.includes("ArrowRight")) {
+            this.game.player.setState(states.RUNNING, 2);
+          } else if (inputKeys.includes("ArrowUp")) {
+            this.game.player.setState(states.RUNNING, 2);
+          } else if (inputKeys.includes("ArrowDown")) {
+            this.game.player.setState(states.RUNNING, 2);
           } else if (inputKeys.includes("s")) {
             this.game.player.setState(states.SHOOTING, 2);
           }
@@ -520,13 +563,19 @@ function App() {
           if (!inputKeys.includes("Enter") && this.game.player.onGround()) {
             this.game.player.setState(states.RUNNING, 1);
           } else if (!inputKeys.includes("Enter") && !this.game.player.onGround()) {
-            this.game.player.setState(states.FALLING, 1);
+            this.game.player.setState(states.RUNNING, 1);
           } else if (inputKeys.includes("Enter") && inputKeys.includes("ArrowUp") && this.game.player.onGround()) {
             this.game.player.vy -= 27;
+            this.game.player.setState(states.RUNNING, 2);
           } else if (inputKeys.includes("ArrowDown") && !this.game.player.onGround()) {
-            this.game.player.setState(states.DIVING, 0);
+            this.game.player.setState(states.RUNNING, 2);
           } else if (inputKeys.includes("s")) {
             this.game.player.setState(states.SHOOTING, 2);
+          } else if (inputKeys.includes("ArrowLeft")) {
+            this.game.player.setState(states.RUNNING, 2);
+          } 
+          else if (inputKeys.includes("ArrowRight")) {
+            this.game.player.setState(states.RUNNING, 2);
           }
         }
       }
@@ -549,9 +598,18 @@ function App() {
               this.game.particles.unshift(new Splash(this.game, this.game.player.x + this.game.player.width * 0.5, this.game.player.y + this.game.player.height * 0.5));
             }
           } else if (inputKeys.includes("Enter") && this.game.player.onGround()) {
-            this.game.player.setState(states.ROLLING, 2);
+            this.game.player.setState(states.RUNNING, 2);
           } else if (inputKeys.includes("s")) {
             this.game.player.setState(states.SHOOTING, 2);
+          } else if (inputKeys.includes("ArrowLeft")) {
+            this.game.player.setState(states.RUNNING, 2);
+          } 
+          else if (inputKeys.includes("ArrowRight")) {
+            this.game.player.setState(states.RUNNING, 2);
+          } else if (inputKeys.includes("ArrowUp")) {
+            this.game.player.setState(states.RUNNING, 2);
+          } else if (inputKeys.includes("ArrowDown")) {
+            this.game.player.setState(states.RUNNING, 2);
           }
         }
       }
@@ -581,18 +639,24 @@ function App() {
           super("SHOOTING", game);
         }
         enter() {
-          this.game.player.frameX = 0;
-          this.game.player.frameY = 4;
-          this.game.player.maxFrame = 10;
+          this.game.player.frameX = 5;
+          this.game.player.frameY = 1;
+          this.game.player.maxFrame = 4;
           this.game.particles.unshift(new Projectile(this.game, this.game.player.x + this.game.player.width * 0.55, this.game.player.y + this.game.player.height * 0.5));
+          this.game.projectile.vy = -27;
         }
         handleInput(inputKeys) {
-          // this.game.particles.unshift(new Projectile(this.game, this.game.player.x + this.game.player.width * 0.05, this.game.player.y + this.game.player.height));
-          // this.game.player.shootTop();
-          if (inputKeys.includes("ArrowLeft") && this.game.player.onGround()) {
+          if (inputKeys.includes("ArrowLeft")) {
             this.game.player.setState(states.RUNNING, 1);
-          } else if (inputKeys.includes("ArrowLeft")&& !this.game.player.onGround()) {
-            this.game.player.setState(states.JUMPING, 1);
+          } 
+          else if (inputKeys.includes("ArrowRight")) {
+            this.game.player.setState(states.RUNNING, 1);
+          } else if (inputKeys.includes("ArrowUp")) {
+            this.game.player.setState(states.RUNNING, 1);
+          } else if (inputKeys.includes("ArrowDown")) {
+            this.game.player.setState(states.RUNNING, 1);
+          } else if (inputKeys.includes("s")) {
+            this.game.player.setState(states.RUNNING, 1);
           }
         }
       }
@@ -616,13 +680,13 @@ function App() {
           this.game = game;
           this.x = x;
           this.y = y;
+          this.vy = 0;
           this.width = 10;
           this.height = 10;
           this.speed = 5;
-          this.markedForDeletion = false;
           this.image = fireBallImage;
-          this.states = [new Sitting(game), new Running(game), new Jumping(game), new Falling(game), new Rolling(game), new Diving(game), new Hit(game), new Shooting(game),];
-          this.currentState = null;
+          this.states = this.game.player.states;
+          this.currentState = this.game.player.currentState;
         }
 
         draw(context) {
@@ -635,18 +699,12 @@ function App() {
           if (this.x > this.game.width * 1.8) this.markedForDeletion = true;
         }
 
-        setState(stateIndex, speed) {
-          this.currentState = this.states[stateIndex];
-          this.game.speed = this.game.maxSpeed * speed;
-        }
-
         checkCollisions() {
           this.game.enemies.forEach((enemy) => {
             if (enemy.x < this.x + this.width && enemy.x + enemy.width > this.x && enemy.y < this.y + this.height && enemy.y + enemy.height > this.y) {
               enemy.markForDeletion = true;
-              this.markedForDeletion = true;
               this.game.collisions.push(new CollisionAnimation(this.game, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5));
-              if (this.currentState === this.states[4] || this.currentState === this.states[5] || this.currentState === this.states[3] || this.currentState === this.states[2] || this.currentState === this.states[1] || this.currentState === this.states[0]) {
+              if (this.currentState === this.states[0] || this.currentState === this.states[1] || this.currentState === this.states[2] || this.currentState === this.states[3] || this.currentState === this.states[4] || this.currentState === this.states[5] || this.currentState === this.states[6] || this.currentState === this.states[7]) {
                 this.game.score++;
                 this.game.floatingMessages.push(new FloatingMessage("+1", enemy.x, enemy.y, 150, 50));
               } else {
