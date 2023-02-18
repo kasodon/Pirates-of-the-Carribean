@@ -17,6 +17,11 @@ import fire from './assets/fire.png';
 import boom from './assets/boom.png';
 import lives from './assets/apple.png';
 import fire_ball from './assets/projectile.png';
+import blast_sound from './assets/flash.wav';
+import life_sound from './assets/life.wav';
+import rocky_sound from './assets/stop.wav';
+import shoot_sound from './assets/laser.wav';
+import bg_sound from './assets/bg.wav';
 
 function App() {
   const canvas = React.useRef();
@@ -26,6 +31,7 @@ function App() {
     canvas.current.height = window.innerHeight;
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
+    // const bgSound = new Audio(`${bg_sound}`);
         class Game {
             constructor(width, height) {
               this.width = width;
@@ -37,6 +43,11 @@ function App() {
               this.player = new Player(this);
               this.projectile = new Projectile(this);
               this.input = new InputHandler(this);
+              this.bgSound = new Audio(bg_sound);
+              this.blastSound = new Audio(blast_sound);
+              this.lifeSound = new Audio(life_sound);
+              this.rockySound = new Audio(rocky_sound);
+              this.shootSound = new Audio(shoot_sound);
               this.speed = 0;
               this.maxSpeed = 3;
               this.enemies = [];
@@ -78,7 +89,6 @@ function App() {
               this.ui.draw(context);
             }
             update(delta) {
-              // console.log("enemies array:", this.enemies)
               this.time += delta;
               if (this.time > this.maxTime) {
                 this.gameOver = true;
@@ -334,6 +344,14 @@ function App() {
         update(inputKeys, delta) {
           this.checkCollisions();
           this.currentState.handleInput(inputKeys);
+
+          if (this.game.gameOver === false) {
+            this.game.bgSound.volume = 0.3;
+            this.game.bgSound.play();
+          } 
+          else if (this.game.gameOver === true) {
+            this.game.bgSound.pause();
+          }
         
           // horizontal movement
           if (inputKeys.includes("ArrowRight") && this.currentState !== this.states[6]) {
@@ -408,6 +426,7 @@ function App() {
         checkCollisions() {
           this.game.enemies.forEach((enemy) => {
             if (enemy.x < this.x + this.width && enemy.x + enemy.width > this.x && enemy.y < this.y + this.height && enemy.y + enemy.height > this.y && enemy.type === 'climbing-enemy') {
+              this.game.rockySound.play();
               enemy.markForDeletion = true;
               this.game.collisions.push(new CollisionAnimation(this.game, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5));
               if (this.currentState === this.states[0] || this.currentState === this.states[1] || this.currentState === this.states[2] || this.currentState === this.states[3] || this.currentState === this.states[4] || this.currentState === this.states[5] || this.currentState === this.states[6] || this.currentState === this.states[7]) {
@@ -421,6 +440,7 @@ function App() {
                 this.setState(6, 0);
               }
             } else if (enemy.x < this.x + this.width && enemy.x + enemy.width > this.x && enemy.y < this.y + this.height && enemy.y + enemy.height > this.y && enemy.type === 'flying-enemy') {
+              this.game.blastSound.play();
               enemy.markForDeletion = true;
               this.game.collisions.push(new CollisionBlastAnimation(this.game, enemy.x + enemy.width * 0.3, enemy.y + enemy.height * 0.3));
               if (this.currentState === this.states[0] || this.currentState === this.states[1] || this.currentState === this.states[2] || this.currentState === this.states[3] || this.currentState === this.states[4] || this.currentState === this.states[5] || this.currentState === this.states[6] || this.currentState === this.states[7]) {
@@ -428,7 +448,7 @@ function App() {
                   this.game.score--;
                 }
                 this.game.lives--;
-                this.game.floatingMessages.push(new FloatingMessage("-1", enemy.x, enemy.y, 150, 50));
+                this.game.floatingMessages.push(new FloatingMessage("-1 ☠️", enemy.x, enemy.y, 150, 50));
                 if (this.game.lives === 0) {
                   this.game.gameOver = true;
                 }
@@ -440,11 +460,12 @@ function App() {
                 this.setState(6, 0);
               }
             } else if (enemy.x < this.x + this.width && enemy.x + enemy.width > this.x && enemy.y < this.y + this.height && enemy.y + enemy.height > this.y && enemy.type === 'ground-enemy') {
+              this.game.lifeSound.play();
               enemy.markForDeletion = true;
               this.game.collisions.push(new CollisionFruityAnimation(this.game, enemy.x + enemy.width * 0.3, enemy.y + enemy.height * 0.3));
               if (this.currentState === this.states[0] || this.currentState === this.states[1] || this.currentState === this.states[2] || this.currentState === this.states[3] || this.currentState === this.states[4] || this.currentState === this.states[5] || this.currentState === this.states[6] || this.currentState === this.states[7]) {
                 this.game.lives++;
-                this.game.floatingMessages.push(new FloatingMessage("+1 🍎", enemy.x, enemy.y, 150, 50));
+                this.game.floatingMessages.push(new FloatingMessage("+1 🍎", enemy.x, enemy.y, 140, 50));
                 if (this.game.lives === 0) {
                   this.game.gameOver = true;
                 }
@@ -681,7 +702,8 @@ function App() {
         enter() {
           this.game.player.frameX = 5;
           this.game.player.frameY = 1;
-          this.game.player.maxFrame = 4;
+          this.game.player.maxFrame = 1;
+          this.game.shootSound.play();
           this.game.particles.unshift(new Projectile(this.game, this.game.player.x + this.game.player.width * 0.55, this.game.player.y + this.game.player.height * 0.5));
           this.game.projectile.vy = -27;
         }
