@@ -8,12 +8,14 @@ import layer3 from './assets/3.png';
 import layer4 from './assets/4.png';
 import layer5 from './assets/7.png';
 import enemy_fly from './assets/bomb.png';
-import enemy_plant from './assets/enemy_plant.png';
+import blast from './assets/blast.png';
+import fruity from './assets/fruity.png';
+import enemy_plant from './assets/cherry.png';
 import enemy_spider from './assets/enemy_spider.png';
 import enemy_spider_big from './assets/enemy_spider_big.png';
 import fire from './assets/fire.png';
 import boom from './assets/boom.png';
-import lives from './assets/lives.png';
+import lives from './assets/apple.png';
 import fire_ball from './assets/projectile.png';
 
 function App() {
@@ -76,7 +78,7 @@ function App() {
               this.ui.draw(context);
             }
             update(delta) {
-              // console.log("particles array:", this.particles)
+              // console.log("enemies array:", this.enemies)
               this.time += delta;
               if (this.time > this.maxTime) {
                 this.gameOver = true;
@@ -242,6 +244,7 @@ function App() {
           this.image = flyImage;
           this.angle = 0;
           this.va = Math.random() * 0.0001 + 0.0001; // velocity angle
+          this.type = 'flying-enemy';
         }
         update(deltaTime) {
           super.update(deltaTime);
@@ -254,14 +257,15 @@ function App() {
         constructor(game) {
           super();
           this.game = game;
-          this.width = 60;
-          this.height = 87;
+          this.width = 100;
+          this.height = 100;
           this.x = this.game.width + Math.random() * this.game.width * 0.05;
           this.y = Math.random() * this.game.height * 1.3;
           this.speedX = 0;
           this.speedY = 0;
-          this.maxFrame = 0;
+          this.maxFrame = 1;
           this.image = plantImage;
+          this.type = 'ground-enemy';
         }
       }
       class ClimbingEnemy extends Enemy {
@@ -276,6 +280,7 @@ function App() {
           this.speedX = 0;
           this.speedY = Math.random() > 0.5 ? 1 : -1;
           this.maxFrame = 3;
+          this.type = 'climbing-enemy';
         }
         update(deltaTime) {
           super.update(deltaTime);
@@ -402,12 +407,47 @@ function App() {
         }
         checkCollisions() {
           this.game.enemies.forEach((enemy) => {
-            if (enemy.x < this.x + this.width && enemy.x + enemy.width > this.x && enemy.y < this.y + this.height && enemy.y + enemy.height > this.y) {
+            if (enemy.x < this.x + this.width && enemy.x + enemy.width > this.x && enemy.y < this.y + this.height && enemy.y + enemy.height > this.y && enemy.type === 'climbing-enemy') {
               enemy.markForDeletion = true;
               this.game.collisions.push(new CollisionAnimation(this.game, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5));
               if (this.currentState === this.states[0] || this.currentState === this.states[1] || this.currentState === this.states[2] || this.currentState === this.states[3] || this.currentState === this.states[4] || this.currentState === this.states[5] || this.currentState === this.states[6] || this.currentState === this.states[7]) {
                 this.game.score++;
                 this.game.floatingMessages.push(new FloatingMessage("+1", enemy.x, enemy.y, 150, 50));
+              } else {
+                this.game.lives--;
+                if (this.game.lives === 0) {
+                  this.game.gameOver = true;
+                }
+                this.setState(6, 0);
+              }
+            } else if (enemy.x < this.x + this.width && enemy.x + enemy.width > this.x && enemy.y < this.y + this.height && enemy.y + enemy.height > this.y && enemy.type === 'flying-enemy') {
+              enemy.markForDeletion = true;
+              this.game.collisions.push(new CollisionBlastAnimation(this.game, enemy.x + enemy.width * 0.3, enemy.y + enemy.height * 0.3));
+              if (this.currentState === this.states[0] || this.currentState === this.states[1] || this.currentState === this.states[2] || this.currentState === this.states[3] || this.currentState === this.states[4] || this.currentState === this.states[5] || this.currentState === this.states[6] || this.currentState === this.states[7]) {
+                if (this.game.score > 0) {
+                  this.game.score--;
+                }
+                this.game.lives--;
+                this.game.floatingMessages.push(new FloatingMessage("-1", enemy.x, enemy.y, 150, 50));
+                if (this.game.lives === 0) {
+                  this.game.gameOver = true;
+                }
+              } else {
+                this.game.lives--;
+                if (this.game.lives === 0) {
+                  this.game.gameOver = true;
+                }
+                this.setState(6, 0);
+              }
+            } else if (enemy.x < this.x + this.width && enemy.x + enemy.width > this.x && enemy.y < this.y + this.height && enemy.y + enemy.height > this.y && enemy.type === 'ground-enemy') {
+              enemy.markForDeletion = true;
+              this.game.collisions.push(new CollisionFruityAnimation(this.game, enemy.x + enemy.width * 0.3, enemy.y + enemy.height * 0.3));
+              if (this.currentState === this.states[0] || this.currentState === this.states[1] || this.currentState === this.states[2] || this.currentState === this.states[3] || this.currentState === this.states[4] || this.currentState === this.states[5] || this.currentState === this.states[6] || this.currentState === this.states[7]) {
+                this.game.lives++;
+                this.game.floatingMessages.push(new FloatingMessage("+1 🍎", enemy.x, enemy.y, 150, 50));
+                if (this.game.lives === 0) {
+                  this.game.gameOver = true;
+                }
               } else {
                 this.game.lives--;
                 if (this.game.lives === 0) {
@@ -844,6 +884,72 @@ function App() {
         }
       }
 
+      class CollisionBlastAnimation {
+        constructor(game, x, y) {
+          this.game = game;
+          this.image = blastImage;
+          this.x = x;
+          this.y = y;
+          this.spriteWidth = 158;
+          this.spriteHeight = 158;
+          this.sizeModifier = Math.random() + 0.5;
+          this.width = this.spriteWidth * this.sizeModifier;
+          this.height = this.spriteHeight * this.sizeModifier;
+          this.x = x - this.width * 0.5;
+          this.y = y - this.height * 0.5;
+          this.frameX = 0;
+          this.maxFrame = 9;
+          this.markForDeletion = false;
+          this.fps = Math.random() * 10 + 5;
+          this.frameInterval = 1000 / this.fps;
+          this.frameTimer = 0;
+        }
+        draw(context) {
+          context.drawImage(this.image, this.frameX * this.spriteWidth, 0, this.spriteWidth, this.spriteHeight, this.x, this.y, this.width, this.height);
+        }
+        update(delta) {
+          this.x -= this.game.speed;
+          if (this.frameTimer > this.frameInterval) {
+            this.frameX++;
+            if (this.frameX > this.maxFrame) this.markForDeletion = true;
+            this.frameTimer = 0;
+          } else this.frameTimer += delta;
+        }
+      }
+
+      class CollisionFruityAnimation {
+        constructor(game, x, y) {
+          this.game = game;
+          this.image = fruityImage;
+          this.x = x;
+          this.y = y;
+          this.spriteWidth = 158;
+          this.spriteHeight = 158;
+          this.sizeModifier = Math.random() + 0.5;
+          this.width = this.spriteWidth * this.sizeModifier;
+          this.height = this.spriteHeight * this.sizeModifier;
+          this.x = x - this.width * 0.5;
+          this.y = y - this.height * 0.5;
+          this.frameX = 0;
+          this.maxFrame = 9;
+          this.markForDeletion = false;
+          this.fps = Math.random() * 10 + 5;
+          this.frameInterval = 1000 / this.fps;
+          this.frameTimer = 0;
+        }
+        draw(context) {
+          context.drawImage(this.image, this.frameX * this.spriteWidth, 0, this.spriteWidth, this.spriteHeight, this.x, this.y, this.width, this.height);
+        }
+        update(delta) {
+          this.x -= this.game.speed;
+          if (this.frameTimer > this.frameInterval) {
+            this.frameX++;
+            if (this.frameX > this.maxFrame) this.markForDeletion = true;
+            this.frameTimer = 0;
+          } else this.frameTimer += delta;
+        }
+      }
+
       class UI {
         constructor(game) {
           this.game = game;
@@ -900,6 +1006,8 @@ function App() {
     <img id="boomImage" src={boom} alt=""/>
     <img id="liveImage" src={lives} alt=""/>
     <img id="fireBallImage" src={fire_ball} alt=""/>
+    <img id="blastImage" src={blast} alt=""/>
+    <img id="fruityImage" src={fruity} alt=""/>
     </div>
   );
 }
