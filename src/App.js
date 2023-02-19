@@ -89,13 +89,14 @@ function App() {
               this.ui.draw(context);
             }
             update(delta) {
+              // this.bgSound.volume = 0.3;
               this.time += delta;
               if (this.time > this.maxTime) {
                 this.gameOver = true;
               }
               this.background.update();
               this.player.update(this.input.keys, delta);
-              this.projectile.update();
+              // this.projectile.update();
               // handle enemies
               if (this.enemyTimer > this.enemyInterval) {
                 this.addEnemy();
@@ -345,11 +346,10 @@ function App() {
           this.checkCollisions();
           this.currentState.handleInput(inputKeys);
 
-          if (this.game.gameOver === false) {
-            this.game.bgSound.volume = 0.3;
-            this.game.bgSound.play();
-          } 
-          else if (this.game.gameOver === true) {
+ 
+          if (this.game.gameOver === true) {
+            this.game.bgSound.pause();
+          } else {
             this.game.bgSound.pause();
           }
         
@@ -358,14 +358,16 @@ function App() {
             this.x += this.maxSpeed + 0.001;
           } else if (inputKeys.includes("ArrowLeft") && this.currentState !== this.states[6]) {
             this.x -= this.maxSpeed + 0.001;
-          } else if (inputKeys.includes("s") && this.currentState !== this.states[6]) {	
-            this.projectiles.forEach((projectile) => {	
-              projectile.update();	
-            });	
-            this.projectiles = this.projectiles.filter(	
-              (projectile) => !projectile.markedForDeletion	
-            );	
-          } else this.speed = 0;
+          } 
+          // else if (inputKeys.includes("s") && this.currentState !== this.states[6]) {	
+          //   this.projectiles.forEach((projectile) => {	
+          //     projectile.update();	
+          //   });	
+          //   this.projectiles = this.projectiles.filter(	
+          //     (projectile) => !projectile.markedForDeletion	
+          //   );	
+          // } 
+          else this.speed = 0;
         
           // horizontal boundaries
           if (this.x < 0) this.x = 0;
@@ -376,14 +378,16 @@ function App() {
             this.y -= this.maxSpeed + 0.001;
           } else if (inputKeys.includes("ArrowDown") && this.currentState !== this.states[6]) {
             this.y += this.maxSpeed + 0.001;
-          } else if (inputKeys.includes("s") && this.currentState !== this.states[6]) {	
-            this.projectiles.forEach((projectile) => {	
-              projectile.update();	
-            });	
-            this.projectiles = this.projectiles.filter(	
-              (projectile) => !projectile.markedForDeletion	
-            );	
-          } else this.speed = 0;
+          } 
+          // else if (inputKeys.includes("s") && this.currentState !== this.states[6]) {	
+          //   this.projectiles.forEach((projectile) => {	
+          //     projectile.update();	
+          //   });	
+          //   this.projectiles = this.projectiles.filter(	
+          //     (projectile) => !projectile.markedForDeletion	
+          //   );	
+          // } 
+          else this.speed = 0;
         
           // vertical boundaries
           if (this.y < 0) this.y = 0;
@@ -400,6 +404,11 @@ function App() {
             this.frameTimer += delta;
           }
         }
+
+        playSound() {
+          this.game.bgSound.volume = 0.3;
+          this.game.bgSound.play();
+        }
         
         draw(context) {
           if (this.game.debug) {
@@ -410,11 +419,11 @@ function App() {
           });
           context.drawImage(this.image, this.frameX * this.width, this.frameY * this.height, this.width, this.height, this.x, this.y, this.width, this.height);
         }
-        shootTop() {
-            this.projectiles.push(
-              new Projectile(this.game, this.x + 80, this.y + 30)
-            );
-        }
+        // shootTop() {
+        //     this.projectiles.push(
+        //       new Projectile(this.game, this.x + 80, this.y + 30)
+        //     );
+        // }
         onGround() {
           return this.y >= this.game.height - this.height - this.game.groundMargin;
         }
@@ -507,6 +516,7 @@ function App() {
           this.game.player.frameX = 0;
           this.game.player.frameY = 5;
           this.game.player.maxFrame = 4;
+          // this.game.player.playSound();
         }
         handleInput(inputKeys) {
           if (inputKeys.includes("ArrowLeft")) {
@@ -705,20 +715,20 @@ function App() {
           this.game.player.maxFrame = 1;
           this.game.shootSound.play();
           this.game.particles.unshift(new Projectile(this.game, this.game.player.x + this.game.player.width * 0.55, this.game.player.y + this.game.player.height * 0.5));
-          this.game.projectile.vy = -27;
+          // this.game.projectile.vy = -27;
         }
         handleInput(inputKeys) {
           if (inputKeys.includes("ArrowLeft")) {
-            this.game.player.setState(states.RUNNING, 1);
+            this.game.player.setState(states.RUNNING, 2);
           } 
           else if (inputKeys.includes("ArrowRight")) {
-            this.game.player.setState(states.RUNNING, 1);
+            this.game.player.setState(states.RUNNING, 2);
           } else if (inputKeys.includes("ArrowUp")) {
-            this.game.player.setState(states.RUNNING, 1);
+            this.game.player.setState(states.RUNNING, 2);
           } else if (inputKeys.includes("ArrowDown")) {
-            this.game.player.setState(states.RUNNING, 1);
+            this.game.player.setState(states.RUNNING, 2);
           } else if (inputKeys.includes("s")) {
-            this.game.player.setState(states.RUNNING, 1);
+            this.game.player.setState(states.RUNNING, 2);
           }
         }
       }
@@ -734,6 +744,7 @@ function App() {
           this.size *= 0.95;
           if (this.size < 0.5) this.markForDeletion = true;
         }
+
       }
 
       class Projectile extends Particle {
@@ -743,32 +754,39 @@ function App() {
           this.x = x;
           this.y = y;
           this.vy = 0;
-          this.width = 10;
-          this.height = 10;
-          this.speed = 5;
+          this.width = 20;
+          this.height = 20;
+          this.speed = 3;
           this.image = fireBallImage;
           this.states = this.game.player.states;
           this.currentState = this.game.player.currentState;
+          this.type = 'projectile-particle';
         }
 
         draw(context) {
-          context.drawImage(this.image, this.x, this.y);
+          context.drawImage(this.image, this.x, this.y, this.width, this.height);
         }
     
         update() {
+          // super.update();
           this.checkCollisions();
           this.x += this.speed;
-          if (this.x > this.game.width * 1.8) this.markedForDeletion = true;
+          // if (this.x > this.game.width * 0.8) this.markedForDeletion = true;
         }
 
         checkCollisions() {
           this.game.enemies.forEach((enemy) => {
             if (enemy.x < this.x + this.width && enemy.x + enemy.width > this.x && enemy.y < this.y + this.height && enemy.y + enemy.height > this.y) {
               enemy.markForDeletion = true;
+              this.game.particles.forEach((p) => {
+                if (p.type === 'projectile-particle' && enemy.x < this.x + this.width && enemy.x + enemy.width > this.x && enemy.y < this.y + this.height && enemy.y + enemy.height > this.y) {
+                  p.markForDeletion = true;
+                }
+              })
               this.game.collisions.push(new CollisionAnimation(this.game, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5));
               if (this.currentState === this.states[0] || this.currentState === this.states[1] || this.currentState === this.states[2] || this.currentState === this.states[3] || this.currentState === this.states[4] || this.currentState === this.states[5] || this.currentState === this.states[6] || this.currentState === this.states[7]) {
                 this.game.score++;
-                this.game.floatingMessages.push(new FloatingMessage("+1", enemy.x, enemy.y, 150, 50));
+                this.game.floatingMessages.push(new FloatingMessage("+1 🍎", enemy.x, enemy.y, 150, 50));
               } else {
                 this.game.lives--;
                 if (this.game.lives === 0) {
@@ -790,6 +808,7 @@ function App() {
           this.speedX = Math.random() * 0.2;
           this.speedY = Math.random() * 2.2;
           this.color = "rgba(255,255,255,0.3)";
+          this.type = 'dust-particle';
         }
         draw(context) {
           context.beginPath();
@@ -809,6 +828,7 @@ function App() {
           this.speedY = Math.random() * 4 + 1;
           this.gravity = 0;
           this.image = fireTexture;
+          this.type = 'splash-particle';
         }
         draw(context) {
           context.drawImage(this.image, this.x, this.y, this.size, this.size);
@@ -831,6 +851,7 @@ function App() {
           this.speedY = 1;
           this.angle = 0;
           this.va = Math.random() * 0.02 - 0.1;
+          this.type = 'fire-particle';
         }
         draw(context) {
           context.save();
