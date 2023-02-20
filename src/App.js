@@ -1,5 +1,6 @@
 /* eslint-disable no-undef */
 import React from "react";
+import styled from 'styled-components';
 import PropTypes from "prop-types";
 import player from './assets/player-BIG.png';
 import layer1 from './assets/1.png';
@@ -24,6 +25,46 @@ import shoot_sound from './assets/laser.wav';
 import bg_sound from './assets/bg.wav';
 
 function App() {
+  const App = styled.div`
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #f2f2f2;
+  background-image: url('./assets/bg.svg');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`
+const Canvas = styled.canvas`
+width:  87vw;
+height: 87vh;
+margin: 0;
+z-index: 100;
+border: none;
+border-radius: 100px;
+`;
+const PlayerImage = styled.img`
+display: none;
+`;
+const LayerOneImage = styled.img`
+display: none;
+`;
+const LayerTwoImage = styled.img`
+display: none;
+`;
+const LayerThreeImage = styled.img`
+display: none;
+`;
+const LayerFourImage = styled.img`
+display: none;
+`;
+const LayerFiveImage = styled.img`
+display: none;
+`;
   const canvas = React.useRef();
     React.useEffect(() => {
    const ctx = canvas.current.getContext("2d");
@@ -31,7 +72,6 @@ function App() {
     canvas.current.height = window.innerHeight;
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-    // const bgSound = new Audio(`${bg_sound}`);
         class Game {
             constructor(width, height) {
               this.width = width;
@@ -89,14 +129,12 @@ function App() {
               this.ui.draw(context);
             }
             update(delta) {
-              // this.bgSound.volume = 0.3;
               this.time += delta;
               if (this.time > this.maxTime) {
                 this.gameOver = true;
               }
               this.background.update();
               this.player.update(this.input.keys, delta);
-              // this.projectile.update();
               // handle enemies
               if (this.enemyTimer > this.enemyInterval) {
                 this.addEnemy();
@@ -307,7 +345,6 @@ function App() {
           window.addEventListener("keydown", (e) => {
             if (this.keys.indexOf(e.key) === -1 && ["ArrowLeft", "ArrowRight", "ArrowDown", "ArrowUp", "Enter", "Space", "r", "R", "s", "S"].includes(e.key)) {
               this.keys.push(e.key);
-              // console.log(e.key)
             } else if (e.key === "d") {
               game.debug = !game.debug;
             }
@@ -359,14 +396,6 @@ function App() {
           } else if (inputKeys.includes("ArrowLeft") && this.currentState !== this.states[6]) {
             this.x -= this.maxSpeed + 0.001;
           } 
-          // else if (inputKeys.includes("s") && this.currentState !== this.states[6]) {	
-          //   this.projectiles.forEach((projectile) => {	
-          //     projectile.update();	
-          //   });	
-          //   this.projectiles = this.projectiles.filter(	
-          //     (projectile) => !projectile.markedForDeletion	
-          //   );	
-          // } 
           else this.speed = 0;
         
           // horizontal boundaries
@@ -378,15 +407,7 @@ function App() {
             this.y -= this.maxSpeed + 0.001;
           } else if (inputKeys.includes("ArrowDown") && this.currentState !== this.states[6]) {
             this.y += this.maxSpeed + 0.001;
-          } 
-          // else if (inputKeys.includes("s") && this.currentState !== this.states[6]) {	
-          //   this.projectiles.forEach((projectile) => {	
-          //     projectile.update();	
-          //   });	
-          //   this.projectiles = this.projectiles.filter(	
-          //     (projectile) => !projectile.markedForDeletion	
-          //   );	
-          // } 
+          }
           else this.speed = 0;
         
           // vertical boundaries
@@ -419,11 +440,6 @@ function App() {
           });
           context.drawImage(this.image, this.frameX * this.width, this.frameY * this.height, this.width, this.height, this.x, this.y, this.width, this.height);
         }
-        // shootTop() {
-        //     this.projectiles.push(
-        //       new Projectile(this.game, this.x + 80, this.y + 30)
-        //     );
-        // }
         onGround() {
           return this.y >= this.game.height - this.height - this.game.groundMargin;
         }
@@ -715,7 +731,6 @@ function App() {
           this.game.player.maxFrame = 1;
           this.game.shootSound.play();
           this.game.particles.unshift(new Projectile(this.game, this.game.player.x + this.game.player.width * 0.55, this.game.player.y + this.game.player.height * 0.5));
-          // this.game.projectile.vy = -27;
         }
         handleInput(inputKeys) {
           if (inputKeys.includes("ArrowLeft")) {
@@ -768,10 +783,8 @@ function App() {
         }
     
         update() {
-          // super.update();
           this.checkCollisions();
           this.x += this.speed;
-          // if (this.x > this.game.width * 0.8) this.markedForDeletion = true;
         }
 
         checkCollisions() {
@@ -1033,14 +1046,14 @@ function App() {
 
 
   return (
-    <div className="App">
-      <canvas id="canvas1" ref={canvas} />
-          <img id="playerImage" src={player} alt="" />
-    <img id="layer1Image" src={layer1} alt="" />
-    <img id="layer2Image" src={layer2} alt="" />
-    <img id="layer3Image" src={layer3} alt="" />
-    <img id="layer4Image" src={layer4} alt="" />
-    <img id="layer5Image" src={layer5} alt="" />
+    <App>
+      <Canvas ref={canvas} />
+          <PlayerImage id="playerImage" src={player} alt="" />
+    <LayerOneImage id="layer1Image" src={layer1} alt="" />
+    <LayerTwoImage id="layer2Image" src={layer2} alt="" />
+    <LayerThreeImage id="layer3Image" src={layer3} alt="" />
+    <LayerFourImage id="layer4Image" src={layer4} alt="" />
+    <LayerFiveImage id="layer5Image" src={layer5} alt="" />
     <img id="flyImage" src={enemy_fly} alt=""/>
     <img id="plantImage" src={enemy_plant} alt=""/>
     <img id="spiderImage" src={enemy_spider} alt=""/>
@@ -1051,7 +1064,7 @@ function App() {
     <img id="fireBallImage" src={fire_ball} alt=""/>
     <img id="blastImage" src={blast} alt=""/>
     <img id="fruityImage" src={fruity} alt=""/>
-    </div>
+    </App>
   );
 }
 
