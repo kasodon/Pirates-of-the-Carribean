@@ -14,6 +14,10 @@ window.addEventListener("load", function () {
                   this.player = new Player(this);
                   this.projectile = new Projectile(this);
                   this.input = new InputHandler(this);
+                  this.blastSound = new Audio('https://skycross.s3.us-east-2.amazonaws.com/flash.wav?response-content-disposition=inline&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEI%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaDGV1LWNlbnRyYWwtMSJIMEYCIQCB83c%2FM8zD4xNqGlnWfyf3IX46NJYj0vuaSTOjzBjvSgIhANHY2Ndp0RX5qN37GAcN3vJ%2BjHGisYwp%2BXWZkZUnr8G8KuQCCDgQABoMNzE1NzY3MjQ3MDM3Igx7rrhv%2FRzkPi3pwXcqwQKqjab7JWatJyKue8jpFXVNp5C7dj1r6B%2BvfjhXFGkdazfXFgRTXW8F2ENnmRLACBqX5qJJqLjiuV5%2FezF7KXx9on%2BHI3yytBpSFOwLbxj5s%2BK38OLlKwDnVU5A6GWHqnkw%2FZcOa44utwUyPgC0ENtECeK5FXOUMhg91CQ%2FiCTHPP%2Fj4ijQTKDJzX8k3zPPsZ1T3F%2FgV9d%2B5Xpt%2BRXNFJ7dnNGRskULZl%2BUC80Wq72UKAKrOwu2Y1UZ67uoP2RX3sxLgOBL4tST6g7QZ4D97p4qJD2vJvhtRb2221%2FSV8TjZ3tXqGWL%2FIgrpbpnCJyZviaBnW527j8Z8PZomqLadYBAK%2BrKIW1P7fU1uRoawKo1rgMX66dPwY1oB9mbMlsQzYa7Oh1GVguU2mAVnXsrsL2mCelSa9z6vFuIK9N32rJGejMwlZnqnwY6sgJdC%2FOdpO%2BvTM7uLg8%2FWB7Ma%2BgSCAY5E1jNBTt%2Fx0%2Fy6UYcug%2BBCW%2BOTNK3rujpnZftzOqHxhvchBHJMMcV8IiCdPac2SrXbUlrRAuBYetHcBWfh67xOSAUh%2BRejWXt5wFbSZarguL87V50V7ooYoBv33z%2BULEIYXk17PxrHMP9oJfiZZNekPgTtRGqR%2Ffc4YbOUaiTZlR%2FcU5CbXGLr6hvtNIfTihXz4hnNaDcYkVhUsZUQbPPWXTUrrBmbCeij3F6Te8yPDXtkWc9NUHJf08Iq3SoiTD5uqG51xXGuZ0QLb%2Bewi%2FTS%2BKxsYaFCBZjo17EPx9%2BKOYNPdawmeOkjUoYHrc%2B%2BvGddieD0q4t7Z2%2FK1RNkTdfixbdJIxbiJp%2BdUqCsRY%2B265Zm26yqOCfRYChYbw%3D&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20230225T223340Z&X-Amz-SignedHeaders=host&X-Amz-Expires=300&X-Amz-Credential=ASIA2NJYNOC63LJPMHT5%2F20230225%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=141ceddb2c6e8dd037d66c8b1c30e2e4ed47c63d811ebac4f715a3e0fb7f797b');
+                  this.lifeSound = new Audio('https://skycross.s3.us-east-2.amazonaws.com/life.wav?response-content-disposition=inline&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEI%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaDGV1LWNlbnRyYWwtMSJIMEYCIQCB83c%2FM8zD4xNqGlnWfyf3IX46NJYj0vuaSTOjzBjvSgIhANHY2Ndp0RX5qN37GAcN3vJ%2BjHGisYwp%2BXWZkZUnr8G8KuQCCDgQABoMNzE1NzY3MjQ3MDM3Igx7rrhv%2FRzkPi3pwXcqwQKqjab7JWatJyKue8jpFXVNp5C7dj1r6B%2BvfjhXFGkdazfXFgRTXW8F2ENnmRLACBqX5qJJqLjiuV5%2FezF7KXx9on%2BHI3yytBpSFOwLbxj5s%2BK38OLlKwDnVU5A6GWHqnkw%2FZcOa44utwUyPgC0ENtECeK5FXOUMhg91CQ%2FiCTHPP%2Fj4ijQTKDJzX8k3zPPsZ1T3F%2FgV9d%2B5Xpt%2BRXNFJ7dnNGRskULZl%2BUC80Wq72UKAKrOwu2Y1UZ67uoP2RX3sxLgOBL4tST6g7QZ4D97p4qJD2vJvhtRb2221%2FSV8TjZ3tXqGWL%2FIgrpbpnCJyZviaBnW527j8Z8PZomqLadYBAK%2BrKIW1P7fU1uRoawKo1rgMX66dPwY1oB9mbMlsQzYa7Oh1GVguU2mAVnXsrsL2mCelSa9z6vFuIK9N32rJGejMwlZnqnwY6sgJdC%2FOdpO%2BvTM7uLg8%2FWB7Ma%2BgSCAY5E1jNBTt%2Fx0%2Fy6UYcug%2BBCW%2BOTNK3rujpnZftzOqHxhvchBHJMMcV8IiCdPac2SrXbUlrRAuBYetHcBWfh67xOSAUh%2BRejWXt5wFbSZarguL87V50V7ooYoBv33z%2BULEIYXk17PxrHMP9oJfiZZNekPgTtRGqR%2Ffc4YbOUaiTZlR%2FcU5CbXGLr6hvtNIfTihXz4hnNaDcYkVhUsZUQbPPWXTUrrBmbCeij3F6Te8yPDXtkWc9NUHJf08Iq3SoiTD5uqG51xXGuZ0QLb%2Bewi%2FTS%2BKxsYaFCBZjo17EPx9%2BKOYNPdawmeOkjUoYHrc%2B%2BvGddieD0q4t7Z2%2FK1RNkTdfixbdJIxbiJp%2BdUqCsRY%2B265Zm26yqOCfRYChYbw%3D&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20230225T223847Z&X-Amz-SignedHeaders=host&X-Amz-Expires=300&X-Amz-Credential=ASIA2NJYNOC63LJPMHT5%2F20230225%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=d9829cf41ceb3b9d05b70eeb16017af91cf9ba24308eb2e43a83ddd76b66fd05');
+                  this.rockySound = new Audio('https://skycross.s3.us-east-2.amazonaws.com/stop.wav?response-content-disposition=inline&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEI%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaDGV1LWNlbnRyYWwtMSJIMEYCIQCB83c%2FM8zD4xNqGlnWfyf3IX46NJYj0vuaSTOjzBjvSgIhANHY2Ndp0RX5qN37GAcN3vJ%2BjHGisYwp%2BXWZkZUnr8G8KuQCCDgQABoMNzE1NzY3MjQ3MDM3Igx7rrhv%2FRzkPi3pwXcqwQKqjab7JWatJyKue8jpFXVNp5C7dj1r6B%2BvfjhXFGkdazfXFgRTXW8F2ENnmRLACBqX5qJJqLjiuV5%2FezF7KXx9on%2BHI3yytBpSFOwLbxj5s%2BK38OLlKwDnVU5A6GWHqnkw%2FZcOa44utwUyPgC0ENtECeK5FXOUMhg91CQ%2FiCTHPP%2Fj4ijQTKDJzX8k3zPPsZ1T3F%2FgV9d%2B5Xpt%2BRXNFJ7dnNGRskULZl%2BUC80Wq72UKAKrOwu2Y1UZ67uoP2RX3sxLgOBL4tST6g7QZ4D97p4qJD2vJvhtRb2221%2FSV8TjZ3tXqGWL%2FIgrpbpnCJyZviaBnW527j8Z8PZomqLadYBAK%2BrKIW1P7fU1uRoawKo1rgMX66dPwY1oB9mbMlsQzYa7Oh1GVguU2mAVnXsrsL2mCelSa9z6vFuIK9N32rJGejMwlZnqnwY6sgJdC%2FOdpO%2BvTM7uLg8%2FWB7Ma%2BgSCAY5E1jNBTt%2Fx0%2Fy6UYcug%2BBCW%2BOTNK3rujpnZftzOqHxhvchBHJMMcV8IiCdPac2SrXbUlrRAuBYetHcBWfh67xOSAUh%2BRejWXt5wFbSZarguL87V50V7ooYoBv33z%2BULEIYXk17PxrHMP9oJfiZZNekPgTtRGqR%2Ffc4YbOUaiTZlR%2FcU5CbXGLr6hvtNIfTihXz4hnNaDcYkVhUsZUQbPPWXTUrrBmbCeij3F6Te8yPDXtkWc9NUHJf08Iq3SoiTD5uqG51xXGuZ0QLb%2Bewi%2FTS%2BKxsYaFCBZjo17EPx9%2BKOYNPdawmeOkjUoYHrc%2B%2BvGddieD0q4t7Z2%2FK1RNkTdfixbdJIxbiJp%2BdUqCsRY%2B265Zm26yqOCfRYChYbw%3D&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20230225T224116Z&X-Amz-SignedHeaders=host&X-Amz-Expires=300&X-Amz-Credential=ASIA2NJYNOC63LJPMHT5%2F20230225%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=0f7920ea1148aaad1007840c05ecb35cce5627131a8c1b3e80fff7811cdd30bb');
+                  this.shootSound = new Audio('https://skycross.s3.us-east-2.amazonaws.com/laser.wav?response-content-disposition=inline&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEI%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEaDGV1LWNlbnRyYWwtMSJIMEYCIQCB83c%2FM8zD4xNqGlnWfyf3IX46NJYj0vuaSTOjzBjvSgIhANHY2Ndp0RX5qN37GAcN3vJ%2BjHGisYwp%2BXWZkZUnr8G8KuQCCDgQABoMNzE1NzY3MjQ3MDM3Igx7rrhv%2FRzkPi3pwXcqwQKqjab7JWatJyKue8jpFXVNp5C7dj1r6B%2BvfjhXFGkdazfXFgRTXW8F2ENnmRLACBqX5qJJqLjiuV5%2FezF7KXx9on%2BHI3yytBpSFOwLbxj5s%2BK38OLlKwDnVU5A6GWHqnkw%2FZcOa44utwUyPgC0ENtECeK5FXOUMhg91CQ%2FiCTHPP%2Fj4ijQTKDJzX8k3zPPsZ1T3F%2FgV9d%2B5Xpt%2BRXNFJ7dnNGRskULZl%2BUC80Wq72UKAKrOwu2Y1UZ67uoP2RX3sxLgOBL4tST6g7QZ4D97p4qJD2vJvhtRb2221%2FSV8TjZ3tXqGWL%2FIgrpbpnCJyZviaBnW527j8Z8PZomqLadYBAK%2BrKIW1P7fU1uRoawKo1rgMX66dPwY1oB9mbMlsQzYa7Oh1GVguU2mAVnXsrsL2mCelSa9z6vFuIK9N32rJGejMwlZnqnwY6sgJdC%2FOdpO%2BvTM7uLg8%2FWB7Ma%2BgSCAY5E1jNBTt%2Fx0%2Fy6UYcug%2BBCW%2BOTNK3rujpnZftzOqHxhvchBHJMMcV8IiCdPac2SrXbUlrRAuBYetHcBWfh67xOSAUh%2BRejWXt5wFbSZarguL87V50V7ooYoBv33z%2BULEIYXk17PxrHMP9oJfiZZNekPgTtRGqR%2Ffc4YbOUaiTZlR%2FcU5CbXGLr6hvtNIfTihXz4hnNaDcYkVhUsZUQbPPWXTUrrBmbCeij3F6Te8yPDXtkWc9NUHJf08Iq3SoiTD5uqG51xXGuZ0QLb%2Bewi%2FTS%2BKxsYaFCBZjo17EPx9%2BKOYNPdawmeOkjUoYHrc%2B%2BvGddieD0q4t7Z2%2FK1RNkTdfixbdJIxbiJp%2BdUqCsRY%2B265Zm26yqOCfRYChYbw%3D&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20230225T223927Z&X-Amz-SignedHeaders=host&X-Amz-Expires=300&X-Amz-Credential=ASIA2NJYNOC63LJPMHT5%2F20230225%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Signature=8058ab8d3fe7f9f8e03d506fac366a3a298a0533b5806ada7a53033576c6073a');
                   this.speed = 0.9;
                   this.maxSpeed = 3;
                   this.enemies = [];
@@ -378,14 +382,6 @@ class Player {
       } else if (inputKeys.includes("ArrowLeft") && this.currentState !== this.states[6]) {
           this.x -= this.maxSpeed + 0.001;
       }
-      // else if (inputKeys.includes("s") && this.currentState !== this.states[6]) {	
-      //   this.projectiles.forEach((projectile) => {	
-      //     projectile.update();	
-      //   });	
-      //   this.projectiles = this.projectiles.filter(	
-      //     (projectile) => !projectile.markedForDeletion	
-      //   );	
-      // } 
       else this.speed = 0;
       // horizontal boundaries
       if (this.x < 0) this.x = 0;
@@ -433,6 +429,7 @@ class Player {
   checkCollisions() {
       this.game.enemies.forEach((enemy) => {
           if (enemy.x < this.x + this.width && enemy.x + enemy.width > this.x && enemy.y < this.y + this.height && enemy.y + enemy.height > this.y && enemy.type === 'climbing-enemy') {
+            this.game.rockySound.play();
               enemy.markForDeletion = true;
               this.game.collisions.push(new CollisionAnimation(this.game, enemy.x + enemy.width * 0.5, enemy.y + enemy.height * 0.5));
               if (this.currentState === this.states[0] || this.currentState === this.states[1] || this.currentState === this.states[2] || this.currentState === this.states[3] || this.currentState === this.states[4] || this.currentState === this.states[5] || this.currentState === this.states[6] || this.currentState === this.states[7]) {
@@ -446,6 +443,7 @@ class Player {
                   this.setState(6, 0);
               }
           } else if (enemy.x < this.x + this.width && enemy.x + enemy.width > this.x && enemy.y < this.y + this.height && enemy.y + enemy.height > this.y && enemy.type === 'flying-enemy') {
+            this.game.blastSound.play();
               enemy.markForDeletion = true;
               this.game.collisions.push(new CollisionBlastAnimation(this.game, enemy.x + enemy.width * 0.3, enemy.y + enemy.height * 0.3));
               if (this.currentState === this.states[0] || this.currentState === this.states[1] || this.currentState === this.states[2] || this.currentState === this.states[3] || this.currentState === this.states[4] || this.currentState === this.states[5] || this.currentState === this.states[6] || this.currentState === this.states[7]) {
@@ -465,6 +463,7 @@ class Player {
                   this.setState(6, 0);
               }
           } else if (enemy.x < this.x + this.width && enemy.x + enemy.width > this.x && enemy.y < this.y + this.height && enemy.y + enemy.height > this.y && enemy.type === 'ground-enemy') {
+            this.game.lifeSound.play();
               enemy.markForDeletion = true;
               this.game.collisions.push(new CollisionFruityAnimation(this.game, enemy.x + enemy.width * 0.3, enemy.y + enemy.height * 0.3));
               if (this.currentState === this.states[0] || this.currentState === this.states[1] || this.currentState === this.states[2] || this.currentState === this.states[3] || this.currentState === this.states[4] || this.currentState === this.states[5] || this.currentState === this.states[6] || this.currentState === this.states[7]) {
@@ -692,6 +691,7 @@ class Shooting extends State {
       this.game.player.frameX = 5;
       this.game.player.frameY = 1;
       this.game.player.maxFrame = 1;
+      this.game.shootSound.play();
       this.game.particles.unshift(new Projectile(this.game, this.game.player.x + this.game.player.width * 0.55, this.game.player.y + this.game.player.height * 0.5));
       // this.game.projectile.vy = -27;
   }
